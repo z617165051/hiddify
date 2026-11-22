@@ -55,30 +55,7 @@ jobs:
       - name: Package Windows x64 Setup EXE
         if: matrix.platform == 'windows'
         shell: pwsh
-        run: |
-          make windows-exe-release
-          if ($LASTEXITCODE -ne 0) {
-            $buildExit = $LASTEXITCODE
-            $buildDirectory = "build/windows/x64"
-            $cmake = (Select-String -Path "$buildDirectory/CMakeCache.txt" -Pattern '^CMAKE_COMMAND:INTERNAL=(.+)
-      - uses: actions/upload-artifact@v6
-        if: matrix.platform == 'windows'
-        with:
-          name: Hiddify-Windows-Setup-x64-unsigned
-          path: dist/*/*.exe
-          if-no-files-found: error
-          retention-days: 7
-      - name: Compile iOS without signing
-        if: matrix.platform == 'ios'
-        run: make ios-validate
- -ErrorAction SilentlyContinue).Matches.Groups | Select-Object -Last 1 -ExpandProperty Value
-            if ($cmake -and (Test-Path "$buildDirectory/cmake_install.cmake")) {
-              Push-Location $buildDirectory
-              try { & $cmake -DBUILD_TYPE=Release -P cmake_install.cmake }
-              finally { Pop-Location }
-            }
-            exit $buildExit
-          }
+        run: make windows-exe-release
       - uses: actions/upload-artifact@v6
         if: matrix.platform == 'windows'
         with:
