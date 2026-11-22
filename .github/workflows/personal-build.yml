@@ -1,0 +1,59 @@
+name: Hiddify personal test build
+
+on:
+  push:
+    paths:
+      - .github/workflows/personal-build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IS_GITHUB_ACTIONS: '1'
+  TAG_NAME: v5.5.5
+  CHANNEL: stable
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            runner: windows-latest
+          - platform: ios
+            runner: macos-26
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: hiddify/hiddify-app
+          ref: 7804cadac01419f31b1ec7802d9e1be599e66de2
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2.21.0
+        with:
+          flutter-version: '3.38.5'
+          channel: stable
+          cache: true
+      - name: Prepare platform dependencies
+        shell: bash
+        run: |
+          make ${{ matrix.platform }}-install-deps
+          echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+          make ${{ matrix.platform }}-prepare
+      - name: Package Windows x64 Setup EXE
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: make windows-exe-release
+      - uses: actions/upload-artifact@v6
+        if: matrix.platform == 'windows'
+        with:
+          name: Hiddify-Windows-Setup-x64-unsigned
+          path: dist/*/*.exe
+          if-no-files-found: error
+          retention-days: 7
+      - name: Compile iOS without signing
+        if: matrix.platform == 'ios'
+        run: make ios-validate
