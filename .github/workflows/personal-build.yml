@@ -21,7 +21,7 @@ jobs:
       matrix:
         include:
           - platform: windows
-            runner: windows-latest
+            runner: windows-2022
           - platform: ios
             runner: macos-26
     runs-on: ${{ matrix.runner }}
