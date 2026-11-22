@@ -32,6 +32,11 @@ jobs:
           repository: hiddify/hiddify-app
           ref: 7804cadac01419f31b1ec7802d9e1be599e66de2
           persist-credentials: false
+      - name: Select upstream iOS SDK
+        if: matrix.platform == 'ios'
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_26.5.app/Contents/Developer
+          xcodebuild -version
       - uses: subosito/flutter-action@v2.21.0
         with:
           flutter-version: '3.38.5'
